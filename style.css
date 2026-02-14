@@ -1,0 +1,42 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #000000, #1c1c1c);
+    color: white;
+    text-align: center;
+}
+
+header {
+    padding: 80px 20px;
+}
+
+h1 {
+    font-size: 50px;
+    letter-spacing: 4px;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 18px;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+button {
+    margin-top: 30px;
+    padding: 12px 30px;
+    font-size: 16px;
+    border: none;
+    border-radius: 30px;
+    background-color: #ff2e63;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+button:hover {
+    background-color: #ff0055;
+    transform: scale(1.05);
+}
+
