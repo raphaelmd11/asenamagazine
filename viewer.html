@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Dergi Görüntüleme</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+<link rel="icon" type="image/png" href="asenamavilogo.png">
+<style>
+
+html, body{
+    margin:0;
+    padding:0;
+    background:#0f0f0f;
+    font-family:Arial;
+    overflow:hidden;
+    overscroll-behavior:none;
+    touch-action:manipulation;
+}
+
+/* ÜST BAR */
+.topbar{
+    position:fixed;
+    top:15px;
+    left:15px;
+    right:15px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+
+    z-index:500;
+}
+.topbar div{
+    display:flex;
+    flex-direction:row;
+    gap:10px;
+    align-items:center;
+}
+.btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    min-width:46px;
+    height:46px;
+
+    padding:0 18px;
+
+    border-radius:50px;
+    border:none;
+
+    background:rgba(80, 80, 80, 0.85);
+    backdrop-filter:blur(12px);
+
+    color:white;
+    font-weight:500;
+    font-size:14px;
+
+    cursor:pointer;
+    transition:all .2s ease;
+
+    box-shadow:0 6px 18px rgba(8, 8, 8, 0.274);
+}
+
+/* Hover (PC için) */
+.btn:hover{
+    background:rgba(40,40,60,0.95);
+}
+
+/* Basınca animasyon */
+.btn:active{
+    transform:scale(0.92);
+}
+
+/* Mobilde üst butonları büyüt */
+@media (max-width:768px){
+    .btn{
+        height:42px;
+        padding:0 14px;
+        font-size:13px;
+    }
+}
+
+.back-icon{
+    font-size:18px;
+    margin-right:6px;
+}
+.mobile-full .back-text{
+    display:none;
+}
+
+/* VIEWER */
+.viewer{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+}
+
+canvas{
+    position:absolute;
+    transform-origin:top left;
+    box-shadow:0 0 40px rgba(0,0,0,0.9);
+    cursor:grab;
+    touch-action:none;
+}
+
+canvas:active{
+    cursor:grabbing;
+}
+
+/* PC OKLARI */
+.arrow{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:70px;
+    height:110px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:40px;
+    color:white;
+    cursor:pointer;
+    z-index:400;
+    backdrop-filter:blur(6px);
+    transition:.25s;
+}
+
+.left{
+    left:0;
+    border-radius:0 25px 25px 0;
+    background:linear-gradient(to right,rgba(0,0,0,.6),rgba(0,0,0,.1));
+}
+
+.right{
+    right:0;
+    border-radius:25px 0 0 25px;
+    background:linear-gradient(to left,rgba(0,0,0,.6),rgba(0,0,0,.1));
+}
+
+.arrow:hover{
+    width:85px;
+    background:rgba(0,0,0,.8);
+}
+
+/* Mobilde yan oklar kapalı */
+@media (max-width:768px){
+    .arrow{
+        display:none !important;
+    }
+/* Mobil fullscreen'de yan oklar ASLA görünmesin */
+.mobile-full .arrow{
+    display:none !important;
+}
+/* Mobil normal mod küçük buton */
+@media (max-width:768px){
+    .btn{
+        padding:8px 14px;
+        font-size:14px;
+    }
+}
+
+/* Mobil fullscreen mod büyük buton */
+.mobile-full .btn{
+    padding:12px 22px;
+    font-size:16px;
+    border-radius:30px;
+}
+}
+
+
+/* SAYFA NUMARASI */
+.page-number{
+    position:fixed;
+    bottom:20px;
+    right:25px;
+    background:#111;
+    padding:6px 14px;
+    border-radius:15px;
+    color:white;
+    z-index:600;
+}
+
+/* ALT NAV varsayılan (PC gizli) */
+.bottom-nav{
+    display:none;
+}
+
+/* Mobil normal mod */
+@media (max-width:768px){
+
+    .bottom-nav{
+        position:fixed;
+        bottom:0px;
+        left:50%;
+        transform:translateX(-50%);
+        display:flex;
+        gap:30px;
+
+        padding:7px 22px;
+        border-radius:50px; /* tam oval */
+
+        background:rgba(65, 65, 65, 0.85);
+        backdrop-filter:blur(1px);
+
+        box-shadow:0 8px 25px rgb(31, 30, 30);
+        z-index:600;
+    }
+
+    .nav-btn{
+        width:54px;
+        height:54px;
+
+        display:flex;
+        align-items:center;
+        justify-content:center;
+
+        border-radius:50%; /* yuvarlak buton */
+        background:rgba(255,255,255,0.08);
+
+        font-size:24px;
+        color:white;
+
+        padding:0; /* padding kaldırdık */
+        transition:all .2s ease;
+    }
+
+    .nav-btn:active{
+        transform:scale(0.9);
+        background:rgba(255,255,255,0.15);
+    }
+}
+
+/* Mobil fullscreen mod (biraz daha büyük) */
+.mobile-full .bottom-nav{
+    padding:6px 20px;
+}
+
+.mobile-full .nav-btn{
+    font-size:22px;
+}
+/* Tam ekranda sadece sağ üst butonlar gizlenir */
+.mobile-full .topbar div{
+    display:none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+<button class="btn" onclick="goBack()">
+<span class="back-icon">←</span>
+<span class="back-text">Geri</span>
+</button>
+<div>
+<button class="btn" onclick="toggleFull()">Tam Ekran</button>
+<button class="btn" onclick="downloadPDF()">PDF İndir</button>
+</div>
+</div>
+
+<div class="viewer" id="viewer">
+<div class="arrow left" onclick="prevPage()">❮</div>
+<canvas id="pdf-render"></canvas>
+<div class="arrow right" onclick="nextPage()">❯</div>
+</div>
+
+<div class="page-number">
+<span id="page-num">0</span> /
+<span id="page-count">0</span>
+</div>
+
+<div class="bottom-nav">
+<div class="nav-btn" onclick="prevPage()">❮</div>
+<div class="nav-btn" onclick="nextPage()">❯</div>
+</div>
+
+<script>
+
+const url = "dergi1/dergi1.pdf";
+
+let pdfDoc = null;
+let pageNum = 1;
+let zoom = 1;
+let minZoom = 1;
+let maxZoom = 4;
+let posX = 0;
+let posY = 0;
+
+let canvas = document.getElementById("pdf-render");
+let ctx = canvas.getContext("2d");
+let viewer = document.getElementById("viewer");
+
+let isDragging = false;
+let startX, startY;
+
+document.addEventListener("fullscreenchange", ()=>{
+    if(!document.fullscreenElement){
+        document.body.classList.remove("mobile-full");
+    }
+});
+
+pdfjsLib.getDocument(url).promise.then(pdf=>{
+    pdfDoc = pdf;
+    document.getElementById("page-count").textContent = pdf.numPages;
+    renderPage(pageNum);
+});
+
+function renderPage(num){
+    pdfDoc.getPage(num).then(page=>{
+        const rawViewport = page.getViewport({scale:1});
+        const fitScale = Math.min(
+            viewer.clientWidth / rawViewport.width,
+            viewer.clientHeight / rawViewport.height
+        );
+        const viewport = page.getViewport({scale:fitScale});
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        page.render({canvasContext: ctx, viewport: viewport}).promise.then(()=>{
+            zoom = 1;
+            centerPDF();
+            updateTransform();
+        });
+    });
+    document.getElementById("page-num").textContent = num;
+}
+
+function centerPDF(){
+    posX = (viewer.clientWidth - canvas.width)/2;
+    posY = (viewer.clientHeight - canvas.height)/2;
+}
+
+function updateTransform(){
+    const scaledWidth = canvas.width * zoom;
+    const scaledHeight = canvas.height * zoom;
+    const vw = viewer.clientWidth;
+    const vh = viewer.clientHeight;
+
+    if(scaledWidth <= vw){
+        posX = (vw - scaledWidth)/2;
+    } else {
+        posX = Math.max(vw - scaledWidth, Math.min(0, posX));
+    }
+
+    if(scaledHeight <= vh){
+        posY = (vh - scaledHeight)/2;
+    } else {
+        posY = Math.max(vh - scaledHeight, Math.min(0, posY));
+    }
+
+    canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${zoom})`;
+}
+
+canvas.addEventListener("wheel", e=>{
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+    const newZoom = Math.min(Math.max(zoom * zoomFactor, minZoom), maxZoom);
+    const scaleRatio = newZoom / zoom;
+    posX -= mouseX * (scaleRatio - 1);
+    posY -= mouseY * (scaleRatio - 1);
+    zoom = newZoom;
+    updateTransform();
+});
+
+canvas.addEventListener("mousedown", e=>{
+    isDragging = true;
+    startX = e.clientX - posX;
+    startY = e.clientY - posY;
+});
+
+window.addEventListener("mousemove", e=>{
+    if(!isDragging) return;
+    posX = e.clientX - startX;
+    posY = e.clientY - startY;
+    updateTransform();
+});
+
+document.addEventListener("fullscreenchange", ()=>{
+
+    setTimeout(()=>{
+        renderPage(pageNum); // fullscreen değişince sayfayı yeniden render et
+    }, 200);
+
+    if(!document.fullscreenElement){
+        document.body.classList.remove("mobile-full");
+    }
+});
+
+function prevPage(){
+    if(pageNum<=1) return;
+    pageNum--;
+    renderPage(pageNum);
+}
+
+function nextPage(){
+    if(pageNum>=pdfDoc.numPages) return;
+    pageNum++;
+    renderPage(pageNum);
+}
+
+function toggleFull(){
+
+    if(!document.fullscreenElement){
+        document.documentElement.requestFullscreen().then(()=>{
+            document.body.classList.add("mobile-full");
+        });
+    }else{
+        document.exitFullscreen();
+    }
+}
+
+function downloadPDF(){
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "dergi.pdf";
+    link.click();
+}
+
+function goBack(){
+    if(document.fullscreenElement){
+        document.exitFullscreen();
+        return;
+    }
+    window.location.href = "index.html";
+}
+/* =========================
+   MOBİL PAN + PINCH ZOOM
+========================= */
+
+let isTouchDragging = false;
+let touchStartX = 0;
+let touchStartY = 0;
+
+let startDist = 0;
+let startZoom = 1;
+let pinchCenterX = 0;
+let pinchCenterY = 0;
+
+canvas.addEventListener("touchstart", e => {
+
+    if (e.touches.length === 1) {
+        // Tek parmak drag
+        isTouchDragging = true;
+        touchStartX = e.touches[0].clientX - posX;
+        touchStartY = e.touches[0].clientY - posY;
+    }
+
+    if (e.touches.length === 2) {
+        // Pinch başlangıç
+        isTouchDragging = false;
+
+        startDist = getDistance(e.touches);
+        startZoom = zoom;
+
+        const rect = canvas.getBoundingClientRect();
+        pinchCenterX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+        pinchCenterY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+    }
+
+}, { passive:false });
+
+
+canvas.addEventListener("touchmove", e => {
+
+    if (e.touches.length === 1 && isTouchDragging) {
+        // Tek parmakla kaydırma
+        posX = e.touches[0].clientX - touchStartX;
+        posY = e.touches[0].clientY - touchStartY;
+        updateTransform();
+    }
+
+    if (e.touches.length === 2) {
+        // Pinch zoom
+        e.preventDefault();
+
+        const newDist = getDistance(e.touches);
+        const newZoom = Math.min(Math.max(startZoom * (newDist / startDist), minZoom), maxZoom);
+
+        const scaleRatio = newZoom / zoom;
+
+        posX -= pinchCenterX * (scaleRatio - 1);
+        posY -= pinchCenterY * (scaleRatio - 1);
+
+        zoom = newZoom;
+        updateTransform();
+    }
+
+}, { passive:false });
+
+
+canvas.addEventListener("touchend", () => {
+    isTouchDragging = false;
+});
+
+
+function getDistance(touches) {
+    return Math.hypot(
+        touches[0].clientX - touches[1].clientX,
+        touches[0].clientY - touches[1].clientY
+    );
+}
+</script>
+</body>
+</html>
