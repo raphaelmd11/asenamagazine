@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asena Nedir?</title>
+<link rel="icon" type="image/png" href="asenamavilogo.png">
+<style>
+/* GENEL */
+body{
+margin:0;
+background:#0d1335;
+font-family:sans-serif;
+color:white;
+padding:60px;
+line-height:1.7;
+transition:0.3s;
+}
+
+@media (max-width:768px){
+body{
+padding:25px;
+}
+}
+
+/* BAŞLIK */
+h1{
+text-align:center;
+margin-top:20px;
+}
+
+/* MENU */
+.menu-container{
+position:absolute;
+top:25px;
+right:30px;
+z-index:1000;
+}
+
+.menu-icon{
+cursor:pointer;
+}
+
+.menu-icon div{
+width:26px;
+height:2px;
+background:white;
+margin:6px 0;
+transition:0.3s;
+}
+
+.dropdown-menu{
+position:absolute;
+top:40px;
+right:0;
+background:rgba(20,25,60,0.98);
+backdrop-filter:blur(20px);
+border-radius:14px;
+display:none;
+min-width:170px;
+border:1px solid rgba(255,255,255,0.08);
+box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+.dropdown-menu a{
+display:block;
+padding:14px 18px;
+color:white;
+text-decoration:none;
+font-size:14px;
+transition:0.2s;
+}
+
+.dropdown-menu a:hover{
+background:rgba(255,255,255,0.08);
+}
+
+.dropdown-menu.active{
+display:block;
+}
+
+/* Menü açıkken scroll kilitle */
+body.menu-open{
+overflow:hidden;
+}
+</style>
+</head>
+
+<body>
+
+<div class="menu-container">
+  <div class="menu-icon" onclick="toggleMenu()">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+
+  <div class="dropdown-menu" id="dropdownMenu">
+    <a href="index.html">Ana Sayfa</a>
+    <a href="asena.html">Asena Nedir?</a>
+    <a href="dergiler.html">Dergilerimiz</a>
+  </div>
+</div>
+
+<h1>Asena Nedir?</h1>
+
+<p>
+DERGİ ASENA NEDİR?</p>
+    Biz kim miyiz? Asena Magazine diğer bir adıyla Dergi Asena olarak biz, siz gençlerin görmek, duymak, öğrenmek istediği şeyleri, açıklanması konuşulması gereken şeyleri hiç bir filtre olmadan en doğru haliyle sizlere sunan kişileriz. Her konu altında bilgiler bulabileceğiniz, her türlü bilgiye erişim sağlayabileceğiniz bir yapıya sahibiz, misyonumuz da tam olarak bu. İlgi alanınız fark etmeksizin dergilerimizi müthiş bir keyif ile okuyacağınızdan şüpheniz olmasın çünkü bilimden sanata, siyasetten spora, gündemden  ilginç bilgiler bölümüne kadar pek çok bölüme sahibiz. Kendi konusuna ilgi dolu yazar ve editör kadromuz ile olabilecek en kaliteli şekilde sizlerin yanındayız.
+
+</p>
+
+<p>
+   Peki Amacımız Ne?</p>
+    Gençlerin fikirlerini, düşüncelerini, çalışmalarını, inançlarını, doğrularını ve daha fazlasını paylaşmaktan çekinmeyeceği bir alan oluşturmak. Bilgiler edinmek ve bunları eğlenceli şekillerde dostça bir dil ile kimseyi sıkmadan yapmak. Emin olun odak süreniz kısa ise bile sıkılmadan okunacak bir dergiyiz. Hepimizin de bildiği üzere ülkemiz de dahil olmak üzere Dünya üzerinde haksızlık ve zalimlik oranı çok yüksek, biz bunları konuşmak için de geliyoruz. görmediğiniz bakış açılarını göstermek ya da hiç görmediğiniz şeyleri göstermek. Kısacası aklınıza gelebilecek her alanda gözlerinizi açarak sizi bilinçli insanlar yapmak ASIL AMACIMIZ, sizleri at gözlüklerinizden kurtarmak için buradayız!
+</p>
+<p>  Neden Asena İsmi?</p>
+  Eminim hepinizin aklına gelen ilk sorulardan birisi bu “Neden Asena?”. İsmimiz aslında Türk mitolojilerinden gelen bir Türk ismi. Önderlik eden, yol gösteren ve korkmadan görevini yerine getiren bir kurt anlamını taşıyor bu isim. Tıpkı amacımız nedir kısmında okuduğunuz gibi adımız ile de amacımızı destekliyoruz, Emin olun ki yaptıklarımız ile de aynı şeyi gerçekleştireceğiz.</p>
+<script>
+function toggleMenu(){
+const menu=document.getElementById("dropdownMenu");
+menu.classList.toggle("active");
+document.body.classList.toggle("menu-open");
+}
+
+document.addEventListener("click", function(event){
+const menu=document.getElementById("dropdownMenu");
+const icon=document.querySelector(".menu-icon");
+
+if(!menu.contains(event.target) && !icon.contains(event.target)){
+menu.classList.remove("active");
+document.body.classList.remove("menu-open");
+}
+});
+</script>
+
+</body>
+</html>
