@@ -386,7 +386,7 @@ canvas.addEventListener("wheel", e=>{
 
 // MOUSE DRAG
 canvas.addEventListener("mousedown", e=>{
-    if(zoom <= 1) return;
+    if(zoom <= minZoom) return;
     isDragging = true;
     startX = e.clientX - posX;
     startY = e.clientY - posY;
@@ -438,8 +438,8 @@ let pinchCenterX = 0;
 let pinchCenterY = 0;
 
 canvas.addEventListener("touchstart", e => {
-    if(e.touches.length===1){
-        if(zoom <=1) return;
+ if(e.touches.length===1){
+    if(zoom <= minZoom) return;
         isTouchDragging = true;
         touchStartX = e.touches[0].clientX - posX;
         touchStartY = e.touches[0].clientY - posY;
@@ -479,3 +479,4 @@ canvas.addEventListener("touchend", ()=>{ isTouchDragging=false; });
 </script>
 </body>
 </html>
+
