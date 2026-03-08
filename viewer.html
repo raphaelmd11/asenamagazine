@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Dergi Görüntüleme</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
 <link rel="icon" type="image/png" href="asenamavilogo.png">
 <style>
 
@@ -103,6 +102,7 @@ canvas{
     box-shadow:0 0 40px rgba(0,0,0,0.9);
     cursor:grab;
     touch-action:none;
+    transition:opacity 0.4s ease;
 }
 
 canvas:active{
@@ -149,26 +149,19 @@ canvas:active{
     .arrow{
         display:none !important;
     }
-/* Mobil fullscreen'de yan oklar ASLA görünmesin */
-.mobile-full .arrow{
-    display:none !important;
-}
-/* Mobil normal mod küçük buton */
-@media (max-width:768px){
+    .mobile-full .arrow{
+        display:none !important;
+    }
     .btn{
         padding:8px 14px;
         font-size:14px;
     }
+    .mobile-full .btn{
+        padding:12px 22px;
+        font-size:16px;
+        border-radius:30px;
+    }
 }
-
-/* Mobil fullscreen mod büyük buton */
-.mobile-full .btn{
-    padding:12px 22px;
-    font-size:16px;
-    border-radius:30px;
-}
-}
-
 
 /* SAYFA NUMARASI */
 .page-number{
@@ -189,7 +182,6 @@ canvas:active{
 
 /* Mobil normal mod */
 @media (max-width:768px){
-
     .bottom-nav{
         position:fixed;
         bottom:0px;
@@ -278,10 +270,10 @@ canvas:active{
 
 <script>
 
-const url = "dergi1/dergi1.pdf";
-
-let pdfDoc = null;
+// PNG tabanlı sistem
+const totalPages = 36; // Sayfa sayısı
 let pageNum = 1;
+
 let zoom = 1;
 let minZoom = 1;
 let maxZoom = 4;
@@ -295,42 +287,67 @@ let viewer = document.getElementById("viewer");
 let isDragging = false;
 let startX, startY;
 
-document.addEventListener("fullscreenchange", ()=>{
-    if(!document.fullscreenElement){
-        document.body.classList.remove("mobile-full");
-    }
-});
-
-pdfjsLib.getDocument(url).promise.then(pdf=>{
-    pdfDoc = pdf;
-    document.getElementById("page-count").textContent = pdf.numPages;
-    renderPage(pageNum);
-});
+document.getElementById("page-count").textContent = totalPages;
+renderPage(pageNum);
 
 function renderPage(num){
-    pdfDoc.getPage(num).then(page=>{
-        const rawViewport = page.getViewport({scale:1});
-        const fitScale = Math.min(
-            viewer.clientWidth / rawViewport.width,
-            viewer.clientHeight / rawViewport.height
-        );
-        const viewport = page.getViewport({scale:fitScale});
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        page.render({canvasContext: ctx, viewport: viewport}).promise.then(()=>{
-            zoom = 1;
+    canvas.style.opacity = 0;
+    setTimeout(()=>{
+        let img = new Image();
+        img.src = `dergi1/${num}.png`;
+        img.onload = function(){
+            // Ekrana sığdırmak için scale hesapla
+            const scale = Math.min(viewer.clientWidth / img.width, viewer.clientHeight / img.height);
+
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+            // Yeni: minZoom = ekran boyutuna sığma ölçeği
+            minZoom = scale;
+            zoom = scale;  
             centerPDF();
             updateTransform();
-        });
-    });
+            canvas.style.opacity = 1;
+        }
+    },200);
     document.getElementById("page-num").textContent = num;
 }
 
+function updateTransform(){
+    const scaledWidth = canvas.width * zoom;
+    const scaledHeight = canvas.height * zoom;
+    const vw = viewer.clientWidth;
+    const vh = viewer.clientHeight;
+
+    posX = (vw - scaledWidth)/2;
+    posY = (vh - scaledHeight)/2;
+
+    canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${zoom})`;
+}
+
+// SAYFA GEÇİŞLERİ
+function prevPage(){
+    if(pageNum<=1) return;
+    pageNum--;
+    renderPage(pageNum);
+}
+
+function nextPage(){
+    if(pageNum>=totalPages) return;
+    pageNum++;
+    renderPage(pageNum);
+}
+
+// ORTALA
 function centerPDF(){
     posX = (viewer.clientWidth - canvas.width)/2;
     posY = (viewer.clientHeight - canvas.height)/2;
 }
 
+// TRANSFORM
 function updateTransform(){
     const scaledWidth = canvas.width * zoom;
     const scaledHeight = canvas.height * zoom;
@@ -352,6 +369,7 @@ function updateTransform(){
     canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${zoom})`;
 }
 
+// ZOOM
 canvas.addEventListener("wheel", e=>{
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
@@ -366,56 +384,37 @@ canvas.addEventListener("wheel", e=>{
     updateTransform();
 });
 
+// MOUSE DRAG
 canvas.addEventListener("mousedown", e=>{
+    if(zoom <= 1) return;
     isDragging = true;
     startX = e.clientX - posX;
     startY = e.clientY - posY;
 });
-
 window.addEventListener("mousemove", e=>{
     if(!isDragging) return;
     posX = e.clientX - startX;
     posY = e.clientY - startY;
     updateTransform();
 });
-
-document.addEventListener("fullscreenchange", ()=>{
-
-    setTimeout(()=>{
-        renderPage(pageNum); // fullscreen değişince sayfayı yeniden render et
-    }, 200);
-
-    if(!document.fullscreenElement){
-        document.body.classList.remove("mobile-full");
-    }
+window.addEventListener("mouseup", ()=>{
+    isDragging = false;
 });
 
-function prevPage(){
-    if(pageNum<=1) return;
-    pageNum--;
-    renderPage(pageNum);
-}
-
-function nextPage(){
-    if(pageNum>=pdfDoc.numPages) return;
-    pageNum++;
-    renderPage(pageNum);
-}
-
+// FULLSCREEN
 function toggleFull(){
-
     if(!document.fullscreenElement){
-        document.documentElement.requestFullscreen().then(()=>{
-            document.body.classList.add("mobile-full");
-        });
+        document.documentElement.requestFullscreen();
+        document.body.classList.add("mobile-full");
     }else{
         document.exitFullscreen();
     }
 }
 
+// DOWNLOAD PDF
 function downloadPDF(){
     const link = document.createElement("a");
-    link.href = url;
+    link.href = "dergi1/dergi1.pdf";
     link.download = "dergi.pdf";
     link.click();
 }
@@ -427,10 +426,8 @@ function goBack(){
     }
     window.location.href = "index.html";
 }
-/* =========================
-   MOBİL PAN + PINCH ZOOM
-========================= */
 
+/* MOBİL TOUCH + PINCH */
 let isTouchDragging = false;
 let touchStartX = 0;
 let touchStartY = 0;
@@ -441,68 +438,44 @@ let pinchCenterX = 0;
 let pinchCenterY = 0;
 
 canvas.addEventListener("touchstart", e => {
-
-    if (e.touches.length === 1) {
-        // Tek parmak drag
+    if(e.touches.length===1){
+        if(zoom <=1) return;
         isTouchDragging = true;
         touchStartX = e.touches[0].clientX - posX;
         touchStartY = e.touches[0].clientY - posY;
     }
-
-    if (e.touches.length === 2) {
-        // Pinch başlangıç
+    if(e.touches.length===2){
         isTouchDragging = false;
-
-        startDist = getDistance(e.touches);
+        startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                               e.touches[0].clientY - e.touches[1].clientY);
         startZoom = zoom;
-
         const rect = canvas.getBoundingClientRect();
-        pinchCenterX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
-        pinchCenterY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+        pinchCenterX = ((e.touches[0].clientX + e.touches[1].clientX)/2) - rect.left;
+        pinchCenterY = ((e.touches[0].clientY + e.touches[1].clientY)/2) - rect.top;
     }
+},{passive:false});
 
-}, { passive:false });
-
-
-canvas.addEventListener("touchmove", e => {
-
-    if (e.touches.length === 1 && isTouchDragging) {
-        // Tek parmakla kaydırma
+canvas.addEventListener("touchmove", e=>{
+    if(e.touches.length===1 && isTouchDragging){
         posX = e.touches[0].clientX - touchStartX;
         posY = e.touches[0].clientY - touchStartY;
         updateTransform();
     }
-
-    if (e.touches.length === 2) {
-        // Pinch zoom
+    if(e.touches.length===2){
         e.preventDefault();
-
-        const newDist = getDistance(e.touches);
-        const newZoom = Math.min(Math.max(startZoom * (newDist / startDist), minZoom), maxZoom);
-
-        const scaleRatio = newZoom / zoom;
-
-        posX -= pinchCenterX * (scaleRatio - 1);
-        posY -= pinchCenterY * (scaleRatio - 1);
-
+        const newDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                                   e.touches[0].clientY - e.touches[1].clientY);
+        const newZoom = Math.min(Math.max(startZoom*(newDist/startDist), minZoom), maxZoom);
+        const scaleRatio = newZoom/zoom;
+        posX -= pinchCenterX*(scaleRatio-1);
+        posY -= pinchCenterY*(scaleRatio-1);
         zoom = newZoom;
         updateTransform();
     }
+},{passive:false});
 
-}, { passive:false });
+canvas.addEventListener("touchend", ()=>{ isTouchDragging=false; });
 
-
-canvas.addEventListener("touchend", () => {
-    isTouchDragging = false;
-});
-
-
-function getDistance(touches) {
-    return Math.hypot(
-        touches[0].clientX - touches[1].clientX,
-        touches[0].clientY - touches[1].clientY
-    );
-}
 </script>
 </body>
 </html>
