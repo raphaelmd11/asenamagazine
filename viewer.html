@@ -295,23 +295,56 @@ function renderPage(num){
     setTimeout(()=>{
         let img = new Image();
         img.src = `dergi1/${num}.png`;
-        img.onload = function(){
-            // Ekrana sığdırmak için scale hesapla
-            const scale = Math.min(viewer.clientWidth / img.width, viewer.clientHeight / img.height);
+img.onload = function(){
 
-            canvas.width = img.width;
-            canvas.height = img.height;
+    // 🔹 LOW QUALITY DRAW (küçük çözünürlük)
+    const scale = Math.min(
+        viewer.clientWidth / img.width,
+        viewer.clientHeight / img.height
+    );
 
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    const smallWidth = img.width * 0.25;
+    const smallHeight = img.height * 0.25;
 
-            // Yeni: minZoom = ekran boyutuna sığma ölçeği
-            minZoom = scale;
-            zoom = scale;  
-            centerPDF();
-            updateTransform();
-            canvas.style.opacity = 1;
-        }
+    canvas.width = smallWidth;
+    canvas.height = smallHeight;
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0,smallWidth,smallHeight);
+
+    minZoom = scale;
+    zoom = scale;
+
+    centerPDF();
+    updateTransform();
+
+    canvas.style.opacity = 1;
+
+    // 🔥 SONRA GERÇEK KALİTE
+    setTimeout(()=>{
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+        minZoom = scale;
+        zoom = scale;
+
+        centerPDF();
+        updateTransform();
+
+    }, 80);
+
+    // 🔥 PRELOAD (sende zaten vardı, kalsın)
+    if(num < totalPages){
+        let preload = new Image();
+        preload.src = `dergi1/${num+1}.png`;
+    }
+}
     },200);
     document.getElementById("page-num").textContent = num;
 }
@@ -386,7 +419,7 @@ canvas.addEventListener("wheel", e=>{
 
 // MOUSE DRAG
 canvas.addEventListener("mousedown", e=>{
-    if(zoom <= minZoom) return;
+    if(zoom <= 1) return;
     isDragging = true;
     startX = e.clientX - posX;
     startY = e.clientY - posY;
@@ -438,8 +471,8 @@ let pinchCenterX = 0;
 let pinchCenterY = 0;
 
 canvas.addEventListener("touchstart", e => {
- if(e.touches.length===1){
-    if(zoom <= minZoom) return;
+    if(e.touches.length===1){
+        if(zoom <=1) return;
         isTouchDragging = true;
         touchStartX = e.touches[0].clientX - posX;
         touchStartY = e.touches[0].clientY - posY;
@@ -479,4 +512,3 @@ canvas.addEventListener("touchend", ()=>{ isTouchDragging=false; });
 </script>
 </body>
 </html>
-
