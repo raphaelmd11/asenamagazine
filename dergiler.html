@@ -118,7 +118,8 @@ transform:scale(1.05);
 
 <div class="container">
   
-  <img src="img1.png" alt="Dergi 1" onclick="indirDergi()">
+  <img src="img2.png" alt="Dergi 1" onclick="indirDergi2()">
+  <img src="img1.png" alt="Dergi 1" onclick="indirDergi1()">
 
 </div>
 
@@ -138,10 +139,18 @@ menu.classList.remove("active");
 });
 
 /* PDF'yi zorla indir */
-function indirDergi(){
+function indirDergi1(){
 const link=document.createElement("a");
 link.href="dergi1/dergi1.pdf";
-link.download="dergi1.pdf";
+link.download="AsenaMagazine1.sayı.pdf";
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+}
+function indirDergi2(){
+const link=document.createElement("a");
+link.href="dergi2/dergi2.pdf";
+link.download="AsenaMagazine2.sayı.pdf";
 document.body.appendChild(link);
 link.click();
 document.body.removeChild(link);
