@@ -243,7 +243,28 @@ body{
   cursor:pointer;
   color:white;
 }
+/* SPONSORS */
+.sponsor-grid{
+  margin-top:30px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:20px;
+}
 
+
+
+
+.sponsor-card:hover{
+  transform:translateY(-5px);
+  background:rgba(255,255,255,.07);
+}
+
+.sponsor-card img{
+  max-width:100%;
+  max-height:100px;
+  object-fit:contain;
+  filter:brightness(1.1);
+}
 </style>
 </head>
 
@@ -282,10 +303,9 @@ body{
 <div class="magazine-section">
   <div class="mag-wrapper">
     <div class="mag-slider" id="magSlider">
-          <div class="mag-slide">
+       <div class="mag-slide">
         <img src="img3.png" onclick="window.location.href='3viewer.html?img=img3.png'">
       </div>
-      
       <div class="mag-slide">
         <img src="img2.png" onclick="window.location.href='2viewer.html?img=img2.png'">
       </div>
@@ -321,7 +341,24 @@ body{
     </div>
   </div>
 </div>
+<!-- SPONSORLAR -->
+<div class="footer">
+  <div class="footer-box">
+    
+    <h2>Sponsorlarımız</h2>
 
+    <div class="sponsor-grid">
+
+      <div class="sponsor-card">
+        <img src="sponsor1.png" alt="Sponsor 1">
+      </div>
+
+     
+
+    </div>
+
+  </div>
+</div>
 <div class="site-bottom">
   <div>© 2026 Asena Magazine – Tüm hakları saklıdır.</div>
   <div class="creator">Designed and developed by Mustafa Demirdaş.</div>
@@ -391,6 +428,35 @@ document.getElementById("imageModal").addEventListener("click",function(e){
 });
 
 
+</script>
+<script>
+document.addEventListener("contextmenu", function(e) {
+    e.preventDefault();
+});
+</script>
+<script>
+document.onkeydown = function(e) {
+
+    // F12 engelle
+    if (e.keyCode == 123) {
+        return false;
+    }
+
+    // Ctrl+Shift+I
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 73) {
+        return false;
+    }
+
+    // Ctrl+Shift+J
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 74) {
+        return false;
+    }
+
+    // Ctrl+U (kaynak görüntüle)
+    if (e.ctrlKey && e.keyCode == 85) {
+        return false;
+    }
+}
 </script>
 <!-- IMAGE MODAL -->
 <div class="image-modal" id="imageModal" onclick="closeModal()">
